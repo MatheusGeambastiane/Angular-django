@@ -15,8 +15,8 @@ class ExamViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
-        exam = Exam.objects.get(_id=request.data.get(_id))
-        exam.day
+        exam = Exam.objects.get(schedule__id=request.data.get(self.schedule_id))
+        exam.day = self.schedule_id.day
         return
 
 

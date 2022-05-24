@@ -12,6 +12,6 @@ class ExamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exam
         # fields = '__all__'
-        fields = ['patient', 'medical', 'specialty', '', 'disponible', 'day', 'hour', 'status']
+        fields = ['patient', 'medical', 'specialty', 'schedule','done', 'day', 'hour', 'status']
 
 
