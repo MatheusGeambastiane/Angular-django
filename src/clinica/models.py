@@ -1,9 +1,12 @@
 
-from turtle import st
-from account.models import CustomUser
 from django.db import models
+from django.core.validators import EmailValidator
+
 from datetime import datetime, date
 
+from django.forms import ValidationError
+
+from account.models import CustomUser
 
 
 # Create your models here.
@@ -25,7 +28,7 @@ class Medical(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nome do médico", )
     crm = models.CharField(max_length=10, verbose_name="CRM do médico", help_text="Número do registro médico", 
                         blank=False, null=False, unique=True )
-    email = models.EmailField(max_length=50, verbose_name="Email")
+    email = models.EmailField( validators=[EmailValidator],max_length=50, verbose_name="Email")
     specialty = models.ForeignKey(Specialty, on_delete=models.SET_NULL, null=True, verbose_name="Especialidade")
     is_active = models.BooleanField(default=True, verbose_name="Está ativo")
 
@@ -60,33 +63,34 @@ class Hour(models.Model):
 
 class Schedule(models.Model):
     
-    CHOICES = (
-		('08h-09h', '08h-09h'),
-		('09h-10h', '09h-10h'),
-		('10h-11h', '10h-11h'),
-        ('11h-12h', '13h-14h'),
-        ('14h-15h', '15h-16h'),
-        ('16h-17h', '17h-18h'),
-	)
+    def day_validator(value):
+        if date.today() > value:
+            raise ValidationError (r'Não é possível cadastrar uma nova agenda para datas já passadas')  
+        else:
+            return value
+   
 
     medical_name = models.ForeignKey(Medical, verbose_name="Médico", on_delete=models.SET_NULL, null=True)
-    day = models.DateField(verbose_name="dia", default=datetime.today)
+    day = models.DateField(validators=[day_validator],verbose_name="dia", default=datetime.today)
     schedule = models.ForeignKey(Hour, verbose_name="Horário", on_delete=models.CASCADE)
 
     def _get_today(self):
         return datetime.today
     
+
     def __str__(self) -> str:
         
-        return str(f"{self.medical_name} - {self.day.strftime('%d/%m/%Y')} - {self.schedule}")
+        return (f"{self.medical_name} - {self.day.strftime('%d/%m/%Y')} - {self.schedule}")
 
     class Meta:
         managed = True
+        unique_together = ('medical_name', 'day', 'schedule')
         verbose_name= 'Agenda'
         verbose_name_plural= 'Agendas'
 
 class Exam(models.Model):
-
+    
+    
 
     Status_Choice = (
 		('Agendada', 'Agendada'),
@@ -101,19 +105,16 @@ class Exam(models.Model):
     medical = models.ForeignKey(Medical, verbose_name="Médico", on_delete=models.CASCADE)
     day = models.DateField(verbose_name="Data da Consulta")
     hour = models.ForeignKey(Hour,verbose_name="Horário", on_delete=models.CASCADE)
-    calendly = models.OneToOneField(Schedule, verbose_name="Agenda médica", on_delete=models.CASCADE, null=True, unique=True)
+    schedule = models.OneToOneField(Schedule, verbose_name="Agenda médica", on_delete=models.CASCADE, null=True, unique=True)
     status = models.CharField(max_length=20 ,verbose_name="Status da Consulta", choices=Status_Choice)
-    disponible = models.BooleanField(verbose_name="Consulta Disponível", default=True)
+    done = models.BooleanField(verbose_name="Consulta já foi realizada", default=False)
+
     
-    # def expirated(self):
-    #     date = datetime.today()
-    #     day = self.day
-    #     hour = self.hour
-
-    #     scheduled = se
-
-    #     if self.day and self.hour < date 
-
+    def agenda(self):
+        
+        qs = Schedule.objects.filter(id=self.calendly)
+        return qs
+        agenda()
 
     def __str__(self) -> str:
         return str(f'{self.patient.username} - {self.calendly.day}  {self.calendly.schedule}')
