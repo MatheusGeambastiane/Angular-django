@@ -1,10 +1,10 @@
-
+from tabnanny import verbose
 from django.db import models
 from django.core.validators import EmailValidator
 
 from datetime import datetime, date
 
-from django.forms import ValidationError
+from django.forms import NullBooleanField, ValidationError
 
 from account.models import CustomUser
 
@@ -24,16 +24,19 @@ class Specialty(models.Model):
         return self.specialty_name
 
 class Medical(models.Model):
+    telefone_validator = RegexValidator(
+        regex=r'^\+?1?\d{9,14}$', message="O valor máximo é de 14 dígitos")
 
-    name = models.CharField(max_length=100, verbose_name="Nome do médico", )
+    medical_name = models.CharField(max_length=100, verbose_name="Nome do médico", )
     crm = models.CharField(max_length=10, verbose_name="CRM do médico", help_text="Número do registro médico", 
                         blank=False, null=False, unique=True )
-    email = models.EmailField( validators=[EmailValidator],max_length=50, verbose_name="Email")
+    medical_email = models.EmailField( validators=[EmailValidator],max_length=50, verbose_name="Email")
     specialty = models.ForeignKey(Specialty, on_delete=models.SET_NULL, null=True, verbose_name="Especialidade")
+    phone = models.CharField(validators=[telefone_regex], max_length=17, blank=True, null=True, verbose_name="Telefone")
     is_active = models.BooleanField(default=True, verbose_name="Está ativo")
 
     def __str__(self) -> str:
-        return self.name
+        return self.name + self.specialty
 
     class Meta:
         managed = True
@@ -70,9 +73,8 @@ class Schedule(models.Model):
             return value
    
 
-    medical_name = models.ForeignKey(Medical, verbose_name="Médico", on_delete=models.SET_NULL, null=True)
+    medical_name = models.ForeignKey(Medical, verbose_name="Médico", on_delete=models.PROTECT, null=True)
     day = models.DateField(validators=[day_validator],verbose_name="dia", default=datetime.today)
-    schedule = models.ForeignKey(Hour, verbose_name="Horário", on_delete=models.CASCADE)
 
     def _get_today(self):
         return datetime.today
@@ -80,11 +82,11 @@ class Schedule(models.Model):
 
     def __str__(self) -> str:
         
-        return (f"{self.medical_name} - {self.day.strftime('%d/%m/%Y')} - {self.schedule}")
+        return (f"{self.medical_name} - {self.day.strftime('%d/%m/%Y')}")
 
     class Meta:
         managed = True
-        unique_together = ('medical_name', 'day', 'schedule')
+        unique_together = ('medical_name', 'day')
         verbose_name= 'Agenda'
         verbose_name_plural= 'Agendas'
 
@@ -92,32 +94,37 @@ class Exam(models.Model):
     
     
 
-    Status_Choice = (
-		('Agendada', 'Agendada'),
-		('Cancelada', 'Cancelada'),
-		('Espera', 'Espera'),
-		('Realizada', 'Realizada'),
-	)
+    # Status_Choice = (
+	# 	('Agendada', 'Agendada'),
+	# 	('Cancelada', 'Cancelada'),
+	# 	('Espera', 'Espera'),
+	# 	('Realizada', 'Realizada'),
+	# )
+    #Implementar STATUS NA CONSULTA SE TIVER TEMPO
 
+    patient = models.ForeignKey(CustomUser, verbose_name="Paciente", on_delete=models.CASCADE, null=True)
+    day = models.DateTimeField()
+    hour = models.TimeField()
+    schedule = models.ForeignKey(Schedule, verbose_name="Agenda médica", on_delete=models.CASCADE, null=True)
+    time_scheduled = models.DateTimeField(auto_now=True)
 
-    patient = models.ForeignKey(CustomUser, verbose_name="Paciente", on_delete=models.CASCADE)
-    specialty = models.ForeignKey(Specialty, verbose_name="Especialidade da consulta", on_delete=models.CASCADE)
-    medical = models.ForeignKey(Medical, verbose_name="Médico", on_delete=models.CASCADE)
-    day = models.DateField(verbose_name="Data da Consulta")
-    hour = models.ForeignKey(Hour,verbose_name="Horário", on_delete=models.CASCADE)
-    schedule = models.OneToOneField(Schedule, verbose_name="Agenda médica", on_delete=models.CASCADE, null=True, unique=True)
-    status = models.CharField(max_length=20 ,verbose_name="Status da Consulta", choices=Status_Choice)
-    done = models.BooleanField(verbose_name="Consulta já foi realizada", default=False)
+    def save(self, *args, **kwargs):
+        if self.day is None:
+            schedule = schedule.objects.get(pk=self.schedule.id)
+            self.day = schedule.day.strftime(f'%Y-%m-%d {self.hour}')
+        super(Exam, self).save(*args, **kwargs)
 
-    
-    def agenda(self):
+    def specialty(self):
+        return self.schedule.medical_name.specialty
+
+    # def agenda(self):
         
-        qs = Schedule.objects.filter(id=self.calendly)
-        return qs
-        agenda()
+    #     qs = Schedule.objects.filter(id=self.schedule)
+    #     return qs
+    #     agenda()
 
     def __str__(self) -> str:
-        return str(f'{self.patient.username} - {self.calendly.day}  {self.calendly.schedule}')
+        return str(f'{self.patient.username} - {self.schedule.day}')
 
     class Meta:
         managed = True

@@ -1,0 +1,34 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+$background-color: #fff !important;
+$font-color: #fff !important;
+.p-card	{
+    background-color: $background-color;
+    color: $font-color;
+}
+
+.tag{
+    margin-top: 200px;
+}
+
+.logo-bg {
+    background-image: url("./assets/logo-medicar.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.el-margin{
+    margin-top: 20px;
+    border-radius: 10%!important;
+}
+
+.btn-login{
+    background-color: #48B5BB!important;
+
+}
+
+.btn-create{
+    background-color: #fff!important;
+    color: #48B5BB!important;
+}

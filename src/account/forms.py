@@ -1,8 +1,9 @@
-from django.contrib.auth import forms
+# from django.contrib.auth import forms
+# from django.contrib.admin import forms
 
-from .models import CustomUser
+# from .models import CustomUser
 
-
+# forms.c
 # class UserChangeForm(forms.UserChangeForm):
 #     class Meta:
 #         model = CustomUser

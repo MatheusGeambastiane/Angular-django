@@ -11,10 +11,11 @@ class MedicalAdmin(admin.ModelAdmin):
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'medical', 'specialty', 'schedule')
-    search_fields = ('medical', 'patient', 'specialty', 'schedule')
+    list_display = ('patient', 'specialty', 'schedule')
+    search_fields = ('patient','specialty', 'schedule')
     list_filter = ('patient',)
 
+ 
 #admin.site.register(Medical)
 
 admin.site.register(Schedule)
