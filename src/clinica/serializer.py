@@ -2,6 +2,8 @@ from asyncore import read
 from pyexpat import model
 from .models import Exam, Schedule, Medical, Specialty
 from rest_framework import serializers
+from datetime import datetime, date
+
 
 class TimeList(serializers.ListSerializer):
     def to_representation(self, data):
@@ -34,7 +36,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
     def get_hours(self, ):
         now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        queryset = Schedule.objects.filter(schedule__id=schedule.id, day__gte=now, patient__isnull=True)
+        queryset = Exam.objects.filter(schedule__id=schedule.id, day__gte=now, patient__isnull=True)
         serializer = TimeSerializer(instance=queryset, many=True)
         data = [hour.get('hour') for hour in serializer.data]
         return data

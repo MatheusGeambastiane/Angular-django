@@ -16,13 +16,13 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 
-class SpecialtySerializer(ReadOnlyModelViewSet):
+class SpecialtyViewSet(ReadOnlyModelViewSet):
     queryset = Specialty.objects.all()
     search_fields = ('specialty_name')
     filter_backends = (OrderingFilter, SearchFilter)
     permission_classes = (IsAuthenticated)
 
-class MedicalSerializer(ReadOnlyModelViewSet):
+class MedicalViewSet(ReadOnlyModelViewSet):
     queryset = Medical.objects.all()
     search_fields = ('medical_name')
     filter_backends = (OrderingFilter, SearchFilter)
@@ -39,7 +39,7 @@ class MedicalSerializer(ReadOnlyModelViewSet):
 
 
 
-class ScheduleSerializer(ReadOnlyModelViewSet):
+class ScheduleViewSet(ReadOnlyModelViewSet):
     queryset = Schedule.objects.all()
     search_fields = ('medical_name')
     filter_backends = (OrderingFilter, SearchFilter)
@@ -68,7 +68,7 @@ class ScheduleSerializer(ReadOnlyModelViewSet):
 
 
 
-class ExamViewSet(viewsets.ModelViewSet):
+class ExamViewSet(ModelViewSet):
     serializer_class = ExamSerializer
     queryset = Exam.objects.all()
     search_fields = ('medical_name')
@@ -108,10 +108,6 @@ class ExamViewSet(viewsets.ModelViewSet):
             })
 
 
-class ScheduleViewSet(viewsets.ModelViewSet):
-    serializer_class = ScheduleSerializer
-    queryset = Schedule.objects.all()
-    
 
 
 # Create your views here.

@@ -1,6 +1,7 @@
 from tabnanny import verbose
 from django.db import models
-from django.core.validators import EmailValidator
+from django.core.validators import EmailValidator, RegexValidator
+
 
 from datetime import datetime, date
 
@@ -32,7 +33,7 @@ class Medical(models.Model):
                         blank=False, null=False, unique=True )
     medical_email = models.EmailField( validators=[EmailValidator],max_length=50, verbose_name="Email")
     specialty = models.ForeignKey(Specialty, on_delete=models.SET_NULL, null=True, verbose_name="Especialidade")
-    phone = models.CharField(validators=[telefone_regex], max_length=17, blank=True, null=True, verbose_name="Telefone")
+    phone = models.CharField(validators=[telefone_validator], max_length=17, blank=True, null=True, verbose_name="Telefone")
     is_active = models.BooleanField(default=True, verbose_name="Está ativo")
 
     def __str__(self) -> str:
