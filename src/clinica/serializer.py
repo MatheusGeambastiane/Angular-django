@@ -15,38 +15,48 @@ class TimeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Exam
-        fields = ('hour')
+        fields = ('hour',)
 
 class SpecialtySerializer(serializers.ModelSerializer):
     class Meta:
         model= Specialty
-        fields= 'specialty_name'
+        fields= ('specialty_name',)
 
 class MedicalSerializer(serializers.ModelSerializer):
     specialty = SpecialtySerializer(read_only=True)
 
     class Meta:
-        model = Schedule
+        model = Medical
         fields = ('medical_name', 'crm', 'specialty')
 
 
+# class ScheduleSerializer(serializers.ModelSerializer):
+#     medical = MedicalSerializer(read_only=True)
+#     hour = serializers.SerializerMethodField('get_hours')
+
+#     def get_hours(self, schedule):
+#         now = datetime.now().strftime('%Y-%m-%d %H:%M')
+#         queryset = Exam.objects.filter(schedule__id=schedule.id, day__gte=now, patient__isnull=True)
+#         serializer = TimeSerializer(instance=queryset, many=True)
+#         data = [hour.get('hour') for hour in serializer.data]
+#         return data
+
+#     class Meta:
+#         model = Schedule
+#         fields = ('day', 'hour', 'medical')
+
 class ScheduleSerializer(serializers.ModelSerializer):
-    medical = MedicalSerializer(read_only=True)
-    hours = serializers.SerializerMethodField('get_hours')
-
-    def get_hours(self, ):
-        now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        queryset = Exam.objects.filter(schedule__id=schedule.id, day__gte=now, patient__isnull=True)
-        serializer = TimeSerializer(instance=queryset, many=True)
-        data = [hour.get('hour') for hour in serializer.data]
-        return data
-
-    class Meta:
+    # medical = MedicalSerializer(read_only=True)
+    class Meta: 
         model = Schedule
-        fields = ('day', 'hour', 'medical_name')
+        fields = ('get_medical_name', 'day', 'get_hour')
+
 
 class ExamSerializer(serializers.ModelSerializer):
-    medical = MedicalSerializer(read_only=True)
+    # medical = MedicalSerializer(read_only=False)
+    schedule = ScheduleSerializer(read_only=True)
+
+
 
     def get_medical(self, exam):
         queryset = Medical.objects.get(pk=exam.schedule.medical_name.id)
@@ -54,7 +64,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Exam
-        fields = ( 'day', 'hour', 'medical')
+        fields = ( 'id', 'patient', 'patient_name', 'schedule', 'schedule')
 
 
 
